@@ -21,8 +21,6 @@ export default function Login() {
       password,
     });
 
-    console.log("Login result:", { data, error });
-
     if (error?.message === "Email not confirmed") {
       alert(
         `Please confirm your email address. A confirmation link has been sent to your email. ${email}`

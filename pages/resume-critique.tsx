@@ -6,7 +6,6 @@ function resumecritique() {
   return (
     <div>
       <ResumeUploader />
-      
     </div>
   );
 }
