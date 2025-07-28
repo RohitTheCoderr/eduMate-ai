@@ -23,7 +23,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         headers: {
           Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': 'http://localhost:3000', // for local testing
+          // 'HTTP-Referer': 'http://localhost:3000', // for local testing
+          'HTTP-Referer': 'https://edu-mate-ai-eight.vercel.app/', // for local testing
         },
       }
     );
