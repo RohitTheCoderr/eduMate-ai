@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "../lib/supabaseClient";
+import Link from "next/link";
 
 export default function Login() {
   const router = useRouter();
@@ -61,6 +62,16 @@ export default function Login() {
           {loading ? "Logging in..." : "Login"}
         </button>
         {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+
+        <div className="flex gap-4 mt-8">
+          Create Account
+          <Link
+            href="/signup"
+            className="px-4 py-2 text-blue-500 rounded hover:text-blue-700"
+          >
+            Signup
+          </Link>
+        </div>
       </form>
     </div>
   );
