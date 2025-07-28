@@ -1,5 +1,6 @@
-import { IncomingForm } from 'formidable';
-import type { Fields, Files, File } from 'formidable';
+// import { IncomingForm } from 'formidable';
+// import type { Fields, Files, File } from 'formidable';
+import  {IncomingForm, Fields, Files, File } from 'formidable';
 import fs from 'fs';
 import pdfParse from 'pdf-parse';
 import { OpenAI } from 'openai';
@@ -22,15 +23,25 @@ export default async function handler(req, res) {
 
   const form = new IncomingForm({ keepExtensions: true });
 
-  const data: { fields: Fields; files: Files } | null = await new Promise((resolve, reject) => {
+  // const data:{ fields: Fields; files: Files } | null = await new Promise((resolve, reject) => {
+  //   form.parse(req, (err, fields, files) => {
+  //     if (err) reject(err);
+  //     else resolve({ fields, files });
+  //   });
+
+  // }).catch((err) => {
+  //   console.error('Form parse error:', err);
+  //   return null;
+  // });
+
+
+   const data = await new Promise<{ fields: Fields; files: Files }>((resolve, reject) => {
     form.parse(req, (err, fields, files) => {
       if (err) reject(err);
-      else resolve({ fields, files });
+      else resolve({ fields, files }); // 👈 Ensure this shape is correct
     });
-  }).catch((err) => {
-    console.error('Form parse error:', err);
-    return null;
   });
+
 
   if (!data || !data.files || !data.files.file) {
     return res.status(500).json({ error: 'Form parsing failed' });
