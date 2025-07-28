@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
-import Resumeuploader from "../components/ResumeUpload";
 import Link from "next/link";
+import {useRouter } from "next/router";
 
 export default function Home() {
   const [users, setUsers] = useState<any[]>([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     async function getData() {
@@ -21,6 +23,38 @@ export default function Home() {
 
     getData();
   }, []);
+
+
+
+  useEffect(() => {
+    const getSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+    };
+    getSession();
+    // Optional: Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+   const handleClick = () => {
+    if (!isLoggedIn) {
+      alert("Please login first!");
+      router.push('/login');
+    } else {
+      router.push('/dashboard');
+    }
+  };
+
 
   return (
     <>
@@ -78,11 +112,13 @@ export default function Home() {
           </div>
 
           <div className="mt-12">
-            <Link  href="/dashboard">
-              <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full shadow">
+            {/* <Link  href="/dashboard"> */}
+              <button 
+              onClick={handleClick}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full shadow">
                 Get Started
               </button>
-            </Link>
+            {/* </Link> */}
           </div>
         </div>
       </main>
