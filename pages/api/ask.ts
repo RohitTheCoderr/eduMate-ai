@@ -10,15 +10,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // 🔹 Call your AI model (qwen/qwen3-coder or mocked for now)
-    // const responseText =  `AI Response for: ${prompt}`; // Replace this with actual AI call
     const responseText = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        // model: 'qwen/qwen3-coder:free', // or any free model like `deepseek-chat`
+        model: 'qwen/qwen3-coder:free', // or any free model like `deepseek-chat`
         // model: 'MoonshotAI: Kimi K2 (free)', // or any free model like `deepseek-chat`
         // model: 'moonshotai/kimi-dev-72b:free', // or any free model like `deepseek-chat`
-        model: 'moonshotai/kimi-k2:free', // or any free model like `deepseek-chat`
+        // model: 'moonshotai/kimi-k2:free', // or any free model like `deepseek-chat`
         messages: [{ role: 'user', content: prompt }],
       },
       {
@@ -29,10 +27,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       }
     );
-     const answer = responseText.data.choices[0]?.message?.content;
+    const answer = responseText.data.choices[0]?.message?.content;
 
+    // console.log("answer", answer," user_id", user_id, "prompt",prompt,);
     // 🔹 Save to Supabase
-    const { error } = await supabase.from("chatMessages").insert([
+    const { error } = await supabase.from("chat_messages").insert([
       {
         user_id,
         message: prompt,
@@ -41,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     ]);
 
     if (error) {
-      console.error("Supabase insert error:", error.message);
+      console.error("Supabase insert error:", error);
       return res.status(500).json({ error: "Failed to save chat to Supabase" });
     }
 

@@ -1,10 +1,14 @@
-// "use-client"
-// import React from 'react'
+"use-client";
+import ResumeUploader from "@/components/ResumeUpload";
+import React from "react";
 
-// function resumecritique() {
-//   return (
-//     <div>resume-critique</div>
-//   )
-// }
+function resumecritique() {
+  return (
+    <div>
+      <ResumeUploader />
+      
+    </div>
+  );
+}
 
-// export default resumecritique
+export default resumecritique;
