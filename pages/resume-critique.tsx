@@ -4,9 +4,7 @@ import React from "react";
 
 function resumecritique() {
   return (
-    <div>
       <ResumeUploader />
-    </div>
   );
 }
 
