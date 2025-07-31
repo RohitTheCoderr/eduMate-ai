@@ -1,8 +1,11 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { TrashIcon } from "@heroicons/react/24/outline";
 
-export default function whiteboard({ userId }: { userId: string }) {
+export default function whiteboard() {
+  const [userId, setUserId] = useState<string | null>(null);
+
   const canvasRef = useRef<any>(null);
   const [isEraser, setIsEraser] = useState(false);
   const [brushColor, setBrushColor] = useState("#000000");
@@ -13,45 +16,75 @@ export default function whiteboard({ userId }: { userId: string }) {
     "pen" | "rect" | "circle" | "text"
   >("pen");
 
-  console.log("page load");
-  
-  // Initialize canvas one-time
+  // auth user fetch
   useEffect(() => {
-    
+    const fetchUserAndMessages = async () => {
+      // Fetch the user session on mount
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        setUserId(user.id);
+      }
+    };
+    fetchUserAndMessages();
+  }, []);
+
+  // fetch board after fetching userID
+  useEffect(() => {
+    fetchBoards();
+  }, [userId]);
+
+  // Initialize canvas one-time
+  const originalWidth = 900;
+  const originalHeight = 400;
+
+  useEffect(() => {
     const initCanvas = async () => {
       const fabricModule = await import("fabric");
-      const fabricObj = fabricModule.default || fabricModule;
+      const fabric = fabricModule.default || fabricModule;
 
-      const canvas = new fabricObj.Canvas("whiteboard", {
-        backgroundColor: "#fff",
-        width: 350,
-        height: 200,
+      const canvas = new fabric.Canvas("whiteboard", {
+        backgroundColor: "#ffffff",
+        width: originalWidth,
+        height: originalHeight,
+        preserveObjectStacking: true,
       });
 
       canvas.isDrawingMode = true;
       canvasRef.current = canvas;
-
-      // Initial brush
-      // updateBrush(canvas, fabricObj);
       updateBrush(canvas);
-      fetchBoards();
+      // Initial scale
+      const scaleCanvas = () => {
+        const container = document.getElementById("canvas-wrapper");
+        const containerWidth = container.offsetWidth;
+        const scaleRatio = containerWidth / originalWidth;
+
+        canvas.setWidth(originalWidth * scaleRatio);
+        canvas.setHeight(originalHeight * scaleRatio);
+        canvas.setZoom(scaleRatio);
+        canvas.renderAll();
+      };
+
+      // Scale initially
+      scaleCanvas();
+      // Re-scale on window resize
+      window.addEventListener("resize", scaleCanvas);
+      return () => {
+        window.removeEventListener("resize", scaleCanvas);
+        canvas.dispose();
+      };
     };
 
     initCanvas();
-    return () => canvasRef.current?.dispose();
   }, []);
-
-  console.log("shapemode", shapeMode);
 
   // Update brush when settings change
   useEffect(() => {
     if (canvasRef.current && shapeMode === "pen") {
-      console.log("hello chose", canvasRef.current);
-
       updateBrush(canvasRef.current);
     } else if (canvasRef.current) {
-      console.log("hello useEffect valur call");
-
       canvasRef.current.isDrawingMode = false;
     }
   }, [isEraser, brushColor, brushSize, shapeMode]);
@@ -60,7 +93,6 @@ export default function whiteboard({ userId }: { userId: string }) {
    * Brush Update (Fabric v6: PencilBrush is direct class)
    */
   const updateBrush = async (canvas: any) => {
-     console.log("called updateBrush")
     const fabricModule = await import("fabric");
     const fabricObj = fabricModule.default || fabricModule;
 
@@ -98,7 +130,7 @@ export default function whiteboard({ userId }: { userId: string }) {
         new fabricObj.Circle({
           left: 150,
           top: 150,
-          radius: 45,
+          radius: 50,
           fill: brushColor,
         })
       );
@@ -115,8 +147,6 @@ export default function whiteboard({ userId }: { userId: string }) {
   };
 
   const clearCanvas = () => {
-    console.log("clear call");
-
     if (canvasRef.current) {
       canvasRef.current?.clear();
       canvasRef.current.backgroundColor = "#fff";
@@ -125,7 +155,6 @@ export default function whiteboard({ userId }: { userId: string }) {
   };
 
   const undo = () => {
-     console.log("called undo");
     if (!canvasRef.current) return;
     const objs = canvasRef.current.getObjects();
     if (objs.length) {
@@ -135,9 +164,11 @@ export default function whiteboard({ userId }: { userId: string }) {
 
   // Save
   const handleSave = async () => {
-      console.log("called handleSave");
     if (!canvasRef.current) return;
-      console.log("called after return handleSave");
+    if (canvasRef.current.getObjects().length <= 0) {
+      alert("please use board before saving empty");
+      return;
+    }
 
     const canvasData = canvasRef.current.toJSON();
     const thumbnail = canvasRef.current.toDataURL({
@@ -146,7 +177,6 @@ export default function whiteboard({ userId }: { userId: string }) {
     });
 
     const title = prompt("Enter title for this board") || "Untitled";
-
     const { error } = await supabase
       .from("whiteboards")
       .insert([{ user_id: userId, title, data: canvasData, thumbnail }]);
@@ -160,7 +190,6 @@ export default function whiteboard({ userId }: { userId: string }) {
 
   // Fetch Boards
   const fetchBoards = async () => {
-      console.log("called fetchBoards");
     setLoading(true);
     const { data, error } = await supabase
       .from("whiteboards")
@@ -174,8 +203,6 @@ export default function whiteboard({ userId }: { userId: string }) {
 
   const loadBoard = (board: any) => {
     canvasRef.current?.loadFromJSON(board.data, () => {
-      console.log("called loadBoard");
-      
       canvasRef.current.renderAll();
     });
   };
@@ -187,25 +214,30 @@ export default function whiteboard({ userId }: { userId: string }) {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto ">
       <h1 className="text-3xl font-bold text-center mb-6">
         📝 Whiteboard Notes
       </h1>
 
       {/* Canvas */}
-      <div className="flex flex-col items-center">
+      <div
+        id="canvas-wrapper"
+        className=" flex flex-col items-center w-full max-w-full"
+      >
         <canvas
           id="whiteboard"
-          className="border rounded-lg shadow-md bg-white dark:bg-black "
+          className="border rounded-lg shadow-md w-full"
         ></canvas>
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-wrap gap-3 justify-center mt-4">
+      <div className="flex flex-wrap gap-2 sm:gap-3 justify-center mt-4">
         <button
           onClick={() => setShapeMode("pen")}
-          className={`px-4 py-2 rounded ${
-            shapeMode === "pen" ? "bg-blue-600 text-white" : "bg-gray-200"
+          className={` px-2 sm:px-4 py-[2px] sm:py-2 rounded ${
+            shapeMode === "pen"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 dark:bg-slate-700"
           }`}
         >
           ✏️ Pen
@@ -213,8 +245,10 @@ export default function whiteboard({ userId }: { userId: string }) {
         <button
           onClick={() => setIsEraser((prev) => !prev)}
           disabled={shapeMode !== "pen"}
-          className={`px-4 py-2 rounded ${
-            isEraser ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-slate-700"
+          className={` px-2 sm:px-4 py-[2px] sm:py-2 rounded ${
+            isEraser
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 dark:bg-slate-700"
           }`}
         >
           🩹 Eraser
@@ -223,24 +257,30 @@ export default function whiteboard({ userId }: { userId: string }) {
         {/* Shapes */}
         <button
           onClick={() => setShapeMode("rect")}
-          className={`px-4 py-2 rounded ${
-            shapeMode === "rect" ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-slate-700 "
+          className={` px-2 sm:px-4 py-[2px] sm:py-2 rounded ${
+            shapeMode === "rect"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 dark:bg-slate-700 "
           }`}
         >
           ▭ Rectangle
         </button>
         <button
           onClick={() => setShapeMode("circle")}
-          className={`px-4 py-2 rounded ${
-            shapeMode === "circle" ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-slate-700"
+          className={` px-2 sm:px-4 py-[2px] sm:py-2 rounded ${
+            shapeMode === "circle"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 dark:bg-slate-700"
           }`}
         >
           ⭕ Circle
         </button>
         <button
           onClick={() => setShapeMode("text")}
-          className={`px-4 py-2 rounded ${
-            shapeMode === "text" ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-slate-700"
+          className={` px-2 sm:px-4 py-[2px] sm:py-2 rounded ${
+            shapeMode === "text"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 dark:bg-slate-700"
           }`}
         >
           🅣 Text
@@ -248,9 +288,28 @@ export default function whiteboard({ userId }: { userId: string }) {
         <button
           onClick={addShape}
           disabled={shapeMode === "pen"}
-          className="bg-indigo-600 text-white px-4 py-2 rounded"
+          className="bg-indigo-600 text-white  px-2 sm:px-4 py-[2px] sm:py-2 rounded"
         >
           ➕ Add Shape
+        </button>
+        {/* Actions */}
+        <button
+          onClick={undo}
+          className="bg-yellow-500 text-white  px-2 sm:px-4 py-[2px] sm:py-2 rounded"
+        >
+          ↩️ Undo
+        </button>
+        <button
+          onClick={clearCanvas}
+          className="bg-red-500 text-white  px-2 sm:px-4 py-[2px] sm:py-2 rounded"
+        >
+          🧹 Clear
+        </button>
+        <button
+          onClick={handleSave}
+          className="bg-green-600 text-white  px-2 sm:px-4 py-[2px] sm:py-2 rounded hover:bg-green-700"
+        >
+          💾 Save
         </button>
 
         {/* Color & Size */}
@@ -264,7 +323,7 @@ export default function whiteboard({ userId }: { userId: string }) {
         <select
           value={brushSize}
           onChange={(e) => setBrushSize(Number(e.target.value))}
-          className="border rounded p-2 bg-white dark:bg-slate-700"
+          className="border rounded px-2 py-[2px] sm:p-2 bg-white dark:bg-slate-700"
         >
           {[2, 4, 6, 8, 10, 16, 20].map((size) => (
             <option key={size} value={size}>
@@ -272,26 +331,6 @@ export default function whiteboard({ userId }: { userId: string }) {
             </option>
           ))}
         </select>
-
-        {/* Actions */}
-        <button
-          onClick={undo}
-          className="bg-yellow-500 text-white px-4 py-2 rounded"
-        >
-          ↩️ Undo
-        </button>
-        <button
-          onClick={clearCanvas}
-          className="bg-red-500 text-white px-4 py-2 rounded"
-        >
-          🧹 Clear
-        </button>
-        <button
-          onClick={handleSave}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-        >
-          💾 Save
-        </button>
       </div>
 
       {/* Saved Boards */}
@@ -302,33 +341,36 @@ export default function whiteboard({ userId }: { userId: string }) {
         ) : boards.length === 0 ? (
           <p className="text-gray-600">No boards saved yet.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[20rem] overflow-scroll">
             {boards.map((board) => (
               <div
                 key={board.id}
-                className="p-4 bg-gray-100 rounded-lg shadow hover:shadow-lg relative"
+                className="p-4 bg-gray-100 dark:bg-slate-600 dark:text-white rounded-lg shadow hover:shadow-lg relative"
               >
                 <div
                   className="cursor-pointer"
-                  onClick={() => loadBoard(board)}
+                  onClick={() => {
+                    loadBoard(board);
+                  }}
                 >
                   {board.thumbnail && (
                     <img
                       src={board.thumbnail}
                       alt={board.title}
-                      className="w-full h-32 object-contain rounded border mb-2 bg-white"
+                      className="w-full h-52 object-contain rounded border mb-2 bg-white"
                     />
                   )}
-                  <h3 className="font-semibold">{board.title}</h3>
-                  <p className="text-xs text-gray-500">
+
+                  <h3 className="font-semibold ">{board.title}</h3>
+                  <p className="text-xs ">
                     {new Date(board.created_at).toLocaleString()}
                   </p>
                 </div>
                 <button
                   onClick={() => deleteBoard(board.id)}
-                  className="absolute top-2 right-2 text-red-600 text-sm"
+                  className="absolute top-2 right-2 text-red-600 hover:text-red-800"
                 >
-                  ❌ Delete
+                  <TrashIcon className="w-5 h-5" />
                 </button>
               </div>
             ))}
