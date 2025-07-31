@@ -65,7 +65,7 @@ export default function Dashboard() {
 
           {/* Study Notes Generator */}
           <Link
-            href="/WhiteboardPage"
+            href="/whiteboard"
             className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow hover:shadow-lg transition duration-300 group"
           >
             <div className="flex items-center gap-4">

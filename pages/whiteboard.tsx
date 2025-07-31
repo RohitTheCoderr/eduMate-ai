@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
-export default function WhiteboardPage({ userId }: { userId: string }) {
+export default function whiteboard({ userId }: { userId: string }) {
   const canvasRef = useRef<any>(null);
   const [isEraser, setIsEraser] = useState(false);
   const [brushColor, setBrushColor] = useState("#000000");
@@ -13,6 +13,8 @@ export default function WhiteboardPage({ userId }: { userId: string }) {
     "pen" | "rect" | "circle" | "text"
   >("pen");
 
+  console.log("page load");
+  
   // Initialize canvas one-time
   useEffect(() => {
     
