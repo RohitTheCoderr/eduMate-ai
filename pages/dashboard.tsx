@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
 import missionImg from "@/Assets/mission2.png"; // Import the image
+import Connect from "@/components/connect";
 
 export default function Dashboard() {
   const [userName, setUserName] = useState("User");
@@ -142,9 +143,10 @@ export default function Dashboard() {
         </div>
 
         {/* Footer */}
-        <div className="mt-10 text-center text-gray-500 dark:text-gray-400 text-sm">
+        {/* <div className="mt-10 text-center text-gray-500 dark:text-gray-400 text-sm">
           EduMate – Empowering Students to Turn Ideas into Reality 🚀
-        </div>
+        </div> */}
+        <Connect />
       </div>
     </div>
   );

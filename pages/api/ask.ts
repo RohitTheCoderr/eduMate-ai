@@ -24,13 +24,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
           'Content-Type': 'application/json',
           // 'HTTP-Referer': 'http://localhost:3000', // for local testing
-          'HTTP-Referer': 'https://edu-mate-ai-eight.vercel.app/', // for local testing
+          'HTTP-Referer': 'https://edu-mate-ai-eight.vercel.app/',
         },
       }
     );
     const answer = responseText.data.choices[0]?.message?.content;
 
-    // console.log("answer", answer," user_id", user_id, "prompt",prompt,);
     // 🔹 Save to Supabase
     const { error } = await supabase.from("chat_messages").insert([
       {
