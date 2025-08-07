@@ -141,11 +141,6 @@ export default function Dashboard() {
             </details>
           </div>
         </div>
-
-        {/* Footer */}
-        {/* <div className="mt-10 text-center text-gray-500 dark:text-gray-400 text-sm">
-          EduMate – Empowering Students to Turn Ideas into Reality 🚀
-        </div> */}
         <Connect />
       </div>
     </div>

@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabaseClient";
 import Link from "next/link";
 import Image from "next/image";
 import missionImg from "@/Assets/mission2.png"; // Import the image
+import Head from "next/head";
 
 export default function Home() {
   const [users, setUsers] = useState<any[]>([]);
@@ -25,68 +26,16 @@ export default function Home() {
 
   return (
     <>
-      {/* <main className="flex flex-col items-center justify-center min-h-screen dark:bg-gray-900 text-gray-800 dark:text-gray-100 bg-gradient-to-br from-white to-blue-50 px-4 py-12">
-        <div className="text-center max-w-5xl">
-          <h1 className="text-5xl md:text-6xl font-extrabold text-blue-700 drop-shadow-sm">
-            Welcome to <span className="text-blue-500">EduMate AI</span>
-          </h1>
-          <p className="mt-6 text-lg md:text-xl text-gray-700">
-            Empowering students with smart tools to{" "}
-            <span className="font-medium text-blue-600">excel</span> in their
-            academic and professional journey.
-          </p>
+      <Head>
+        <title>EduMate - Empower Students</title>
+        <meta
+          name="description"
+          content="EduMate helps students turn ideas into reality."
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" type="image/png" href="/mission2.png" />
+      </Head>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-2 text-left">
-            <div className="p-6 bg-white rounded-2xl shadow hover:shadow-lg transition-all">
-              <h3 className="text-xl font-semibold text-blue-700">
-                📄 Smart Resume Critique
-              </h3>
-              <p className="mt-2 text-gray-600">
-                Upload your resume and receive instant feedback with actionable
-                insights powered by AI.
-              </p>
-            </div>
-
-            <div className="p-6 bg-white rounded-2xl shadow hover:shadow-lg transition-all">
-              <h3 className="text-xl font-semibold text-blue-700">
-                🤖 AI Chat Assistant
-              </h3>
-              <p className="mt-2 text-gray-600">
-                Get answers to your doubts on careers, colleges, projects, and
-                more with our friendly chatbot.
-              </p>
-            </div>
-
-            <div className="p-6 bg-white rounded-2xl shadow hover:shadow-lg transition-all">
-              <h3 className="text-xl font-semibold text-blue-700">
-                📚 Study Notes Generator
-              </h3>
-              <p className="mt-2 text-gray-600">
-                Turn your raw lecture notes into well-structured study material
-                quickly and easily.
-              </p>
-            </div>
-
-            <div className="p-6 bg-white rounded-2xl shadow hover:shadow-lg transition-all">
-              <h3 className="text-xl font-semibold text-blue-700">
-                🎓 Student Portfolio
-              </h3>
-              <p className="mt-2 text-gray-600">
-                Build your own academic portfolio with projects, achievements,
-                and resume in one place.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-12">
-              <button 
-              onClick={handleClick}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full shadow">
-                Get Started
-              </button>
-          </div>
-        </div>
-      </main> */}
       <main className="flex flex-col items-center justify-center text-gray-800 dark:text-gray-100 ">
         <div className="text-center max-w-5xl">
           {/* Hero Section */}
@@ -212,11 +161,12 @@ export default function Home() {
               Join EduMate AI and unlock the tools that will help you succeed in
               academics and beyond.
             </p>
-            <Link href={"/dashboard"}
+            <Link
+              href={"/dashboard"}
               className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-full shadow-lg transition-transform hover:scale-105"
             >
               Get Started
-            </Link >
+            </Link>
           </div>
         </div>
       </main>

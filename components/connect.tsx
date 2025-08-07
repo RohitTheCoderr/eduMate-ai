@@ -17,11 +17,11 @@ const Connect = () => {
     validationSchema: Yup.object({
       name: Yup.string().required("Your name is required"),
       email: Yup.string().email("Invalid email").required("Email is required"),
-      mobile: Yup.number(),
+      mobile: Yup.number().max(10),
       message: Yup.string().required("Please enter your message"),
     }),
     onSubmit: (values, { resetForm }) => {
-      console.log("Send Message →", values);
+      // console.log("Send Message →", values);
       // handleEmailSend(values) or Supabase insert here
 
       const  formdata ={...values}
@@ -29,7 +29,7 @@ const Connect = () => {
       if (formdata.mobile == "") {
         formdata.mobile = "965453181";
       }
-      console.log("formdata", formdata);
+      // console.log("formdata", formdata);
       
       setIsLoading(true);
       emailjs

@@ -154,13 +154,40 @@ export default function whiteboard() {
     }
   };
 
+
+  const undoStack = useRef([]);
+const redoStack = useRef([]);
+
+  // const undo = () => {
+  //   if (!canvasRef.current) return;
+  //   const objs = canvasRef.current.getObjects();
+  //   if (objs.length) {
+  //     canvasRef.current.remove(objs[objs.length - 1]);
+  //   }
+  // };
+
+
   const undo = () => {
-    if (!canvasRef.current) return;
-    const objs = canvasRef.current.getObjects();
-    if (objs.length) {
-      canvasRef.current.remove(objs[objs.length - 1]);
-    }
-  };
+  if (!canvasRef.current) return;
+  const objs = canvasRef.current.getObjects();
+  if (objs.length) {
+    const last = objs[objs.length - 1];
+    canvasRef.current.remove(last);
+    redoStack.current.push(last); // store for redo
+    undoStack.current.push(canvasRef.current.toJSON()); // optional
+  }
+};
+
+
+ const redo = () => {
+  if (!canvasRef.current) return;
+  const item = redoStack.current.pop();
+  if (item) {
+    canvasRef.current.add(item);
+    canvasRef.current.renderAll();
+  }
+};
+
 
   // Save
   const handleSave = async () => {
@@ -277,12 +304,14 @@ export default function whiteboard() {
         </button>
         <button
           onClick={() => setShapeMode("text")}
-          className={` px-2 sm:px-4 py-[2px] sm:py-2 rounded ${
-            shapeMode === "text"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200 dark:bg-slate-700"
-          }`}
-        >
+          className={` px-2 sm:px-4 py-[2px] sm:py-2 rounded text-black 
+              ${
+              shapeMode === "text"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 dark:bg-slate-700"
+            }
+            `}
+            >
           🅣 Text
         </button>
         <button
@@ -298,6 +327,12 @@ export default function whiteboard() {
           className="bg-yellow-500 text-white  px-2 sm:px-4 py-[2px] sm:py-2 rounded"
         >
           ↩️ Undo
+        </button>
+        <button
+          onClick={redo}
+          className="bg-green-500 text-white  px-2 sm:px-4 py-[2px] sm:py-2 rounded"
+        >
+          ↩️ redo
         </button>
         <button
           onClick={clearCanvas}
